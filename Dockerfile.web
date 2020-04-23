@@ -1,6 +1,9 @@
 FROM golang:alpine AS builder
 
-RUN apk update && apk add --no-cache git
+RUN apk update && apk add --no-cache \
+    git \
+    curl \
+    jq
 WORKDIR $GOPATH/src/pkg/app/
 COPY . .
 
@@ -8,6 +11,13 @@ WORKDIR $GOPATH/src/pkg/app/web
 RUN go get -d -v
 
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /go/bin/web
+
+RUN download_url=$(curl -s https://api.github.com/repos/go-swagger/go-swagger/releases/latest | \
+  jq -r '.assets[] | select(.name | contains("'"$(uname | tr '[:upper:]' '[:lower:]')"'_amd64")) | .browser_download_url') && \
+curl -o /usr/local/bin/swagger -L'#' "$download_url" && \
+chmod +x /usr/local/bin/swagger
+
+RUN /usr/local/bin/swagger generate spec -o ./swaggerui/swagger.json
 
 FROM alpine
 
@@ -17,6 +27,5 @@ EXPOSE 8080
 COPY --from=builder /go/bin/web /go/bin/web
 COPY --from=builder /go/src/pkg/app/web/swaggerui /go/bin/swaggerui
 WORKDIR /go/bin
-
 
 ENTRYPOINT ["./web"]
