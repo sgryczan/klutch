@@ -168,3 +168,26 @@ spec:
           value:  klutch-rabbitmq
       restartPolicy: Always
       
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: klutch
+  namespace: klutch
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header l5d-dst-override $service_name.$namespace.svc.cluster.local:$service_port;
+spec:
+  tls:
+  - hosts:
+    - klutch.sre-dev.solidfire.net
+    secretName: wildcard-cert
+  rules:
+  - host: klutch.sre-dev.solidfire.net
+    http:
+      paths:
+      - backend:
+          serviceName: klutch
+          servicePort: 80
