@@ -11,19 +11,23 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// RedisDatastore houses pools
 type RedisDatastore struct {
 	*pool.Pool
 }
 
+// QueueConnection represents a connection to a RabbitMQ channel
 type QueueConnection struct {
 	Channel *amqp.Channel
 	Queue   *amqp.Queue
 }
 
+// Queue represents a RabbitMQ queue
 type Queue struct {
 	*amqp.Queue
 }
 
+// QueueItem represents a queued action
 type QueueItem struct {
 	ItemName string
 	Status   string
@@ -33,16 +37,26 @@ type Plumbus struct {
 	Name string
 }
 
+// Cluster represents a K8S Cluster stub
+type Cluster struct {
+	Name string
+	ID   int
+}
+
+// RedisHandler transforms incoming requests into Redis actions
 func RedisHandler(c *RedisDatastore,
 	f func(c *RedisDatastore, w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { f(c, w, r) })
 }
 
+// ItemHandler transforms incoming requests into a workable format
+// Generally used to pass a Queue, DB and Function to a mux handler
 func ItemHandler(q *QueueConnection, c *RedisDatastore,
 	f func(q *QueueConnection, c *RedisDatastore, w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { f(q, c, w, r) })
 }
 
+// NewRedisDatastore returns a RedisDataStore
 func NewRedisDatastore(address string) (*RedisDatastore, error) {
 
 	connectionPool, err := pool.New("tcp", address, 10)
@@ -54,6 +68,7 @@ func NewRedisDatastore(address string) (*RedisDatastore, error) {
 	}, nil
 }
 
+// CreateItem creates an object in the database
 func (r *RedisDatastore) CreateItem(item *QueueItem) error {
 
 	itemJSON, err := json.Marshal(*item)
@@ -68,6 +83,7 @@ func (r *RedisDatastore) CreateItem(item *QueueItem) error {
 	return nil
 }
 
+// GetItem returns an object in the database
 func (r *RedisDatastore) GetItem(item string) (*Plumbus, error) {
 
 	exists, err := r.Cmd("EXISTS", "item:"+item).Int()
@@ -96,6 +112,7 @@ func (r *RedisDatastore) GetItem(item string) (*Plumbus, error) {
 	return &p, nil
 }
 
+// ListKeys returns all keys in the database (#WONTSCALE)
 func (r *RedisDatastore) ListKeys() (*[]Plumbus, error) {
 	keysJSON, err := r.Cmd("KEYS", "*").Array()
 	fmt.Println(keysJSON)
@@ -122,6 +139,7 @@ func (r *RedisDatastore) ListKeys() (*[]Plumbus, error) {
 	return &ps, nil
 }
 
+// Close the connection to Redis
 func (r *RedisDatastore) Close() {
 
 	r.Empty()
