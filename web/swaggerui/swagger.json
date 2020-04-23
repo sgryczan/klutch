@@ -1,0 +1,54 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/id/{name}": {
+      "post": {
+        "description": "Adds an item to the database",
+        "consumes": [
+          "text/plain"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "Add"
+        ],
+        "operationId": "Item",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Name to be added.",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Add an item to the database"
+          }
+        }
+      }
+    },
+    "/list": {
+      "get": {
+        "description": "Lists all keys in the database",
+        "consumes": [
+          "text/plain"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "List"
+        ],
+        "operationId": "Item",
+        "responses": {
+          "200": {
+            "description": "List of keys"
+          }
+        }
+      }
+    }
+  }
+}

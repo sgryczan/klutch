@@ -1,0 +1,21 @@
+FROM golang:alpine AS builder
+
+RUN apk update && apk add --no-cache git
+WORKDIR $GOPATH/src/pkg/app/
+COPY . .
+
+WORKDIR $GOPATH/src/pkg/app/task
+RUN go get -d -v
+
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /go/bin/task
+
+FROM alpine
+
+RUN apk update && apk add --no-cache ca-certificates
+ADD https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.3/clusterctl-linux-amd64 /usr/local/bin/clusterctl
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+
+COPY --from=builder /go/bin/task /go/bin/task
+WORKDIR /go/bin
+
+ENTRYPOINT ["./task"]

@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  klutch-web
+  labels:
+    app:  klutch
+    component: web
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app:  klutch
+      component: web
+  template:
+    metadata:
+      labels:
+        app:  klutch
+        component: web
+    spec:
+      containers:
+      - image:  sgryczan/klutch:web-v0.0.0
+        name:  klutch-web
+        imagePullPolicy: Always
+        env:
+        - name:  REDIS_ENDPOINT
+          value:  klutch-redis
+        - name:  RABBITMQ_ENDPOINT
+          value:  klutch-rabbitmq  
+        ports:
+        - containerPort:  8080
+          name:  http
+      restartPolicy: Always
+      
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  klutch
+spec:
+  selector:
+    app:  klutch
+    component: web
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  80
+    targetPort:  8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  klutch-redis
+  labels:
+    app:  klutch
+    component: redis
+spec:
+  selector:
+    matchLabels:
+      app:  klutch
+      component: redis
+  template:
+    metadata:
+      labels:
+        app:  klutch
+        component: redis
+    spec:
+      containers:
+      - image:  library/redis
+        name:  klutch-redis
+        imagePullPolicy: Always
+        ports:
+        - containerPort:  6379
+          name:  redis
+      restartPolicy: Always
+      
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  klutch-redis
+spec:
+  selector:
+    app:  klutch
+    component: redis
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  6379
+    targetPort:  6379
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  klutch-rabbitmq
+  labels:
+    app:  klutch
+    component: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app:  klutch
+      component: rabbitmq
+  template:
+    metadata:
+      labels:
+        app:  klutch
+        component: rabbitmq
+    spec:
+      containers:
+      - image:  library/rabbitmq
+        name:  klutch-rabbitmq
+        imagePullPolicy: Always
+        ports:
+        - containerPort:  5672
+          name:  rabbitmq
+      restartPolicy: Always  
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  klutch-rabbitmq
+spec:
+  selector:
+    app:  klutch
+    component: rabbitmq
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  5672
+    targetPort:  5672
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  klutch-task
+  labels:
+    app:  klutch
+    component: task
+spec:
+  selector:
+    matchLabels:
+      app:  klutch
+      component: task
+  template:
+    metadata:
+      labels:
+        app:  klutch
+        component: task
+    spec:
+      containers:
+      - image:  sgryczan/klutch:task-v0.0.0
+        name:  klutch-task
+        imagePullPolicy: Always
+        env:
+        - name:  REDIS_ENDPOINT
+          value:  klutch-redis
+        - name:  RABBITMQ_ENDPOINT
+          value:  klutch-rabbitmq
+      restartPolicy: Always
+      

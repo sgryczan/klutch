@@ -1,0 +1,216 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  name: sgtest
+  namespace: capv
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: KubeadmControlPlane
+    name: sgtest
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: VSphereCluster
+    name: sgtest
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: HAProxyLoadBalancer
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: sgtest
+  name: sgtest
+  namespace: capv
+spec:
+  user:
+    authorizedKeys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDt9Ia7ql2ZpnpGWfrAgK9YWNnuXwGizAqqWl6BrGJdl7DsOS7nEwTULV2FIxdk+9VlTxTN
+      HlbFZGiGBvzOvWpt9m8yrSq8uYnL3HrNNiAr4PVXqST8aWv3vGvNRuMk0qSLgIYVnUErs8twFYxZCPIMmFEWC2IdfvPQGH5ayK6bWLX5anH8go6cBt0U1Xau8+rS58pL8pKuRupOhf+lAkh7QJYruD/2Vi8Y6d67MZBRkn441N7O3l9Nv3AzWeVFDS/pjxWqqX7174NdKXUEJEwQqf6eeydLCETvoPfOGeZ68Z7BXpgTKiIDhsChNdePU1r+bZ6e9vtNd691wm5zCNFx
+      sebastian.gryczan@solidfire.net
+    name: capv
+  virtualMachineConfiguration:
+    cloneMode: linkedClone
+    datacenter: NetApp-HCI-Datacenter-01
+    datastore: /NetApp-HCI-Datacenter-01/datastore/NKS-C02-DSC-01/NKS-C02-DS-02
+    diskGiB: 25
+    folder: /NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE
+    memoryMiB: 8192
+    network:
+      devices:
+      - dhcp4: true
+        networkName: /NetApp-HCI-Datacenter-01/network/VDS 02/SRE-STRG-2169
+    numCPUs: 2
+    resourcePool: /NetApp-HCI-Datacenter-01/host/NetApp-HCI-Cluster-02/Resources/ART:Appliance/SRE
+    server: 10.117.28.200
+    template: /NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE/templates/capv-haproxy-v0.6.3
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: VSphereCluster
+metadata:
+  name: sgtest
+  namespace: capv
+spec:
+  cloudProviderConfiguration:
+    global:
+      insecure: true
+      secretName: cloud-provider-vsphere-credentials
+      secretNamespace: kube-system
+    network:
+      name: /NetApp-HCI-Datacenter-01/network/VDS 02/SRE-STRG-2169
+    providerConfig:
+      cloud:
+        controllerImage: gcr.io/cloud-provider-vsphere/cpi/release/manager:v1.0.0
+      storage:
+        attacherImage: quay.io/k8scsi/csi-attacher:v1.1.1
+        controllerImage: gcr.io/cloud-provider-vsphere/csi/release/driver:v1.0.2
+        livenessProbeImage: quay.io/k8scsi/livenessprobe:v1.1.0
+        metadataSyncerImage: gcr.io/cloud-provider-vsphere/csi/release/syncer:v1.0.2
+        nodeDriverImage: gcr.io/cloud-provider-vsphere/csi/release/driver:v1.0.2
+        provisionerImage: quay.io/k8scsi/csi-provisioner:v1.2.1
+        registrarImage: quay.io/k8scsi/csi-node-driver-registrar:v1.1.0
+    virtualCenter:
+      10.117.28.200:
+        datacenters: NetApp-HCI-Datacenter-01
+    workspace:
+      datacenter: NetApp-HCI-Datacenter-01
+      datastore: /NetApp-HCI-Datacenter-01/datastore/NKS-C02-DSC-01/NKS-C02-DS-02
+      folder: /NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE
+      resourcePool: /NetApp-HCI-Datacenter-01/host/NetApp-HCI-Cluster-02/Resources/ART:Appliance/SRE
+      server: 10.117.28.200
+  loadBalancerRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: HAProxyLoadBalancer
+    name: sgtest
+  server: 10.117.28.200
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: VSphereMachineTemplate
+metadata:
+  name: sgtest
+  namespace: capv
+spec:
+  template:
+    spec:
+      cloneMode: linkedClone
+      datacenter: NetApp-HCI-Datacenter-01
+      datastore: /NetApp-HCI-Datacenter-01/datastore/NKS-C02-DSC-01/NKS-C02-DS-02
+      diskGiB: 25
+      folder: /NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE
+      memoryMiB: 8192
+      network:
+        devices:
+        - dhcp4: true
+          networkName: /NetApp-HCI-Datacenter-01/network/VDS 02/SRE-STRG-2169
+      numCPUs: 2
+      resourcePool: /NetApp-HCI-Datacenter-01/host/NetApp-HCI-Cluster-02/Resources/ART:Appliance/SRE
+      server: 10.117.28.200
+      template: /NetApp-HCI-Datacenter-01/vm/Cluster02-Development/ART:Appliance/SRE/templates/centos-7-kube-v1.17.3
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  name: sgtest
+  namespace: capv
+spec:
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: VSphereMachineTemplate
+    name: sgtest
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: external
+      controllerManager:
+        extraArgs:
+          cloud-provider: external
+    initConfiguration:
+      nodeRegistration:
+        criSocket: /var/run/containerd/containerd.sock
+        kubeletExtraArgs:
+          cloud-provider: external
+        name: '{{ ds.meta_data.hostname }}'
+    joinConfiguration:
+      nodeRegistration:
+        criSocket: /var/run/containerd/containerd.sock
+        kubeletExtraArgs:
+          cloud-provider: external
+        name: '{{ ds.meta_data.hostname }}'
+    preKubeadmCommands:
+    - hostname "{{ ds.meta_data.hostname }}"
+    - echo "::1         ipv6-localhost ipv6-loopback" >/etc/hosts
+    - echo "127.0.0.1   localhost" >>/etc/hosts
+    - echo "127.0.0.1   {{ ds.meta_data.hostname }}" >>/etc/hosts
+    - echo "{{ ds.meta_data.hostname }}" >/etc/hostname
+    useExperimentalRetryJoin: true
+    users:
+    - name: capv
+      sshAuthorizedKeys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDt9Ia7ql2ZpnpGWfrAgK9YWNnuXwGizAqqWl6BrGJdl7DsOS7nEwTULV2FIxdk+9VlTxTN
+        HlbFZGiGBvzOvWpt9m8yrSq8uYnL3HrNNiAr4PVXqST8aWv3vGvNRuMk0qSLgIYVnUErs8twFYxZCPIMmFEWC2IdfvPQGH5ayK6bWLX5anH8go6cBt0U1Xau8+rS58pL8pKuRupOhf+lAkh7QJYruD/2Vi8Y6d67MZBRkn441N7O3l9Nv3AzWeVFDS/pjxWqqX7174NdKXUEJEwQqf6eeydLCETvoPfOGeZ68Z7BXpgTKiIDhsChNdePU1r+bZ6e9vtNd691wm5zCNFx
+        sebastian.gryczan@solidfire.net
+      sudo: ALL=(ALL) NOPASSWD:ALL
+  replicas: 1
+  version: v1.17.3
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfigTemplate
+metadata:
+  name: sgtest-md-0
+  namespace: capv
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          criSocket: /var/run/containerd/containerd.sock
+          kubeletExtraArgs:
+            cloud-provider: external
+          name: '{{ ds.meta_data.hostname }}'
+      preKubeadmCommands:
+      - hostname "{{ ds.meta_data.hostname }}"
+      - echo "::1         ipv6-localhost ipv6-loopback" >/etc/hosts
+      - echo "127.0.0.1   localhost" >>/etc/hosts
+      - echo "127.0.0.1   {{ ds.meta_data.hostname }}" >>/etc/hosts
+      - echo "{{ ds.meta_data.hostname }}" >/etc/hostname
+      useExperimentalRetryJoin: true
+      users:
+      - name: capv
+        sshAuthorizedKeys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDt9Ia7ql2ZpnpGWfrAgK9YWNnuXwGizAqqWl6BrGJdl7DsOS7nEwTULV2FIxdk+9VlTxTN
+          HlbFZGiGBvzOvWpt9m8yrSq8uYnL3HrNNiAr4PVXqST8aWv3vGvNRuMk0qSLgIYVnUErs8twFYxZCPIMmFEWC2IdfvPQGH5ayK6bWLX5anH8go6cBt0U1Xau8+rS58pL8pKuRupOhf+lAkh7QJYruD/2Vi8Y6d67MZBRkn441N7O3l9Nv3AzWeVFDS/pjxWqqX7174NdKXUEJEwQqf6eeydLCETvoPfOGeZ68Z7BXpgTKiIDhsChNdePU1r+bZ6e9vtNd691wm5zCNFx
+          sebastian.gryczan@solidfire.net
+        sudo: ALL=(ALL) NOPASSWD:ALL
+---
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: MachineDeployment
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: sgtest
+  name: sgtest-md-0
+  namespace: capv
+spec:
+  clusterName: sgtest
+  replicas: 3
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: sgtest
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: sgtest
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          kind: KubeadmConfigTemplate
+          name: sgtest-md-0
+      clusterName: sgtest
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: VSphereMachineTemplate
+        name: sgtest
+      version: v1.17.3

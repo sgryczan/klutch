@@ -1,0 +1,14 @@
+## -- Controller settings -- ##
+VSPHERE_USERNAME: "admin@vsphere.local"                    # The username used to access the remote vSphere endpoint
+VSPHERE_PASSWORD: "my.password"                                  # The password used to access the remote vSphere endpoint
+
+## -- Required workload cluster default settings -- ##
+VSPHERE_SERVER: "10.10.10.10"                                    # The vCenter server IP or FQDN
+VSPHERE_DATACENTER: "my-datacenter"                         # The vSphere datacenter to deploy the management cluster on
+VSPHERE_DATASTORE: "my-datastore"                         # The vSphere datastore to deploy the management cluster on
+VSPHERE_NETWORK: "my-portgroup"                                 # The VM network to deploy the management cluster on
+VSPHERE_RESOURCE_POOL: "my-resourcepool"                       # The vSphere resource pool for your VMs
+VSPHERE_FOLDER: "my-folder"                                          # The VM folder for your VMs. Set to "" to use the root vSphere folder
+VSPHERE_TEMPLATE: "centos-7-kube-v1.17.3"                  # The VM template to use for your management cluster.
+VSPHERE_HAPROXY_TEMPLATE: "capv-haproxy-v0.6.3"  # The VM template to use for the HAProxy load balancer
+VSPHERE_SSH_AUTHORIZED_KEY: "ssh-rsa AAAAB3NzaC1yc2..."  
