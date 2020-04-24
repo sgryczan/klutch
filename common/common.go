@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/mediocregopher/radix.v2/pool"
 	"github.com/streadway/amqp"
@@ -13,6 +14,14 @@ import (
 
 // Version holds the version at buildtime
 var Version string
+var dbEndpoint = os.Getenv("REDIS_ENDPOINT")
+var queueEndpoint = os.Getenv("RABBITMQ_ENDPOINT")
+
+// DBConn exports the database
+var DBConn *RedisDatastore
+
+// QueueConn exports our queue
+var QueueConn *QueueConnection
 
 // RedisDatastore houses pools
 type RedisDatastore struct {
@@ -21,8 +30,9 @@ type RedisDatastore struct {
 
 // QueueConnection represents a connection to a RabbitMQ channel
 type QueueConnection struct {
-	Channel *amqp.Channel
-	Queue   *amqp.Queue
+	Channel    *amqp.Channel
+	Queue      *amqp.Queue
+	Connection *amqp.Connection
 }
 
 // Queue represents a RabbitMQ queue
@@ -74,6 +84,40 @@ func NewRedisDatastore(address string) (*RedisDatastore, error) {
 	return &RedisDatastore{
 		Pool: connectionPool,
 	}, nil
+}
+
+func NewQueue(endpoint string) (*QueueConnection, error) {
+
+	connection, err := amqp.Dial(endpoint)
+	if err != nil {
+		log.Print("Cant connect to rabbitmq")
+	}
+
+	amqpChannel, err := connection.Channel()
+	if err != nil {
+		log.Print("Cannot establish ampq channel")
+	}
+
+	queue, err := amqpChannel.QueueDeclare("items", true, false, false, false, nil)
+	if err != nil {
+		log.Print("could not declare `items` queue")
+	}
+
+	queConn := &QueueConnection{
+		Channel:    amqpChannel,
+		Queue:      &queue,
+		Connection: connection,
+	}
+
+	return queConn, err
+}
+
+func (q *QueueConnection) Close() {
+	channel := q.Channel
+	connection := q.Connection
+
+	channel.Close()
+	connection.Close()
 }
 
 // CreateItem creates an object in the database

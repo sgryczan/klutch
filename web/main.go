@@ -11,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sgryczan/klutch/common"
 	"github.com/sgryczan/klutch/web/handlers"
-	"github.com/streadway/amqp"
 )
 
 var dbEndpoint = os.Getenv("REDIS_ENDPOINT")
@@ -39,27 +38,11 @@ func main() {
 
 	defer db.Close()
 
-	rmq, err := amqp.Dial("amqp://guest:guest@" + queueEndpoint + ":5672/")
+	queConn, err := common.NewQueue("amqp://guest:guest@" + queueEndpoint + ":5672/")
 	if err != nil {
 		log.Print("Cant connect to rabbitmq")
 	}
-	defer rmq.Close()
-
-	amqpChannel, err := rmq.Channel()
-	if err != nil {
-		log.Print("Cannot establish ampq channel")
-	}
-	defer amqpChannel.Close()
-
-	queue, err := amqpChannel.QueueDeclare("items", true, false, false, false, nil)
-	if err != nil {
-		log.Print("could not declare `items` queue")
-	}
-
-	queConn := &common.QueueConnection{
-		Channel: amqpChannel,
-		Queue:   &queue,
-	}
+	defer queConn.Close()
 
 	rand.Seed(time.Now().UnixNano())
 
