@@ -1,6 +1,26 @@
 {
   "swagger": "2.0",
   "paths": {
+    "/about": {
+      "get": {
+        "description": "Returns information about the application",
+        "consumes": [
+          "text/plain"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "About"
+        ],
+        "operationId": "About",
+        "responses": {
+          "200": {
+            "description": "About"
+          }
+        }
+      }
+    },
     "/id/{name}": {
       "post": {
         "description": "Adds an item to the database",

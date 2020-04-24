@@ -1,3 +1,3 @@
-module gitlab.com/sgryczan/go-worker-api/common
+module github.com/sgryczan/klutch/common
 
 go 1.13

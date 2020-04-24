@@ -9,7 +9,7 @@ COPY . .
 WORKDIR $GOPATH/src/pkg/app/task
 RUN go get -d -v
 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X gitlab.com/sgryczan/go-worker-api/common.Version=${VERSION}" -o /go/bin/task
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X github.com/sgryczan/klutch/common.Version=${VERSION}" -o /go/bin/task
 
 FROM alpine
 

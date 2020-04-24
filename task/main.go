@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/sgryczan/klutch/common"
 	"github.com/streadway/amqp"
-	"gitlab.com/sgryczan/go-worker-api/common"
 )
 
 type plumbus struct {

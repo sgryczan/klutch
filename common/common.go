@@ -91,6 +91,16 @@ func (r *RedisDatastore) CreateItem(item *QueueItem) error {
 	return nil
 }
 
+// DeleteItem deletes an object in the database
+func (r *RedisDatastore) DeleteItem(item *QueueItem) error {
+
+	if r.Cmd("DEL", item.ItemName).Err != nil {
+		return errors.New("Failed to execute Redis DEL command")
+	}
+
+	return nil
+}
+
 // GetItem returns an object in the database
 func (r *RedisDatastore) GetItem(item string) (*Plumbus, error) {
 

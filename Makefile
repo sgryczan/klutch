@@ -1,4 +1,4 @@
-VERSION=0.0.0
+VERSION=0.0.1
 IMAGE_NAME=sgryczan/klutch
 
 all: build-web build-task
