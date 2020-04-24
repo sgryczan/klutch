@@ -14,10 +14,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Items contains common.Plumbuses (plumbi?)
-var Items = map[string]common.Plumbus{}
-var DBEndpoint = os.Getenv("REDIS_ENDPOINT")
-var QueueEndpoint = os.Getenv("RABBITMQ_ENDPOINT")
+var dbEndpoint = os.Getenv("REDIS_ENDPOINT")
+var queueEndpoint = os.Getenv("RABBITMQ_ENDPOINT")
 var version string
 
 //var db, err =  common.Newcommon.RedisDatastore("redis:6379")
@@ -26,22 +24,22 @@ func main() {
 
 	// Default values for testing in Docker
 	// remove at some point
-	if DBEndpoint == "" {
-		DBEndpoint = "redis"
+	if dbEndpoint == "" {
+		dbEndpoint = "redis"
 	}
-	if QueueEndpoint == "" {
-		QueueEndpoint = "rabbitmq"
+	if queueEndpoint == "" {
+		queueEndpoint = "rabbitmq"
 	}
 	//
 
-	db, err := common.NewRedisDatastore(DBEndpoint + ":6379")
+	db, err := common.NewRedisDatastore(dbEndpoint + ":6379")
 	if err != nil {
 		log.Print(err)
 	}
 
 	defer db.Close()
 
-	rmq, err := amqp.Dial("amqp://guest:guest@" + QueueEndpoint + ":5672/")
+	rmq, err := amqp.Dial("amqp://guest:guest@" + queueEndpoint + ":5672/")
 	if err != nil {
 		log.Print("Cant connect to rabbitmq")
 	}
