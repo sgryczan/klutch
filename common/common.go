@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/mediocregopher/radix.v2/pool"
 	"github.com/streadway/amqp"
@@ -14,8 +13,6 @@ import (
 
 // Version holds the version at buildtime
 var Version string
-var dbEndpoint = os.Getenv("REDIS_ENDPOINT")
-var queueEndpoint = os.Getenv("RABBITMQ_ENDPOINT")
 
 // DBConn exports the database
 var DBConn *RedisDatastore
