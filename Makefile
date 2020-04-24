@@ -1,7 +1,10 @@
 VERSION=0.0.1
 IMAGE_NAME=sgryczan/klutch
 
-all: build-web build-task
+all: test build-web build-task
+
+test:
+	go test -v ./...
 
 build-web:
 	docker build -f Dockerfile.web --build-arg VERSION=${VERSION} -t ${IMAGE_NAME}:web-v${VERSION} .
@@ -16,4 +19,4 @@ push:
 	docker push ${IMAGE_NAME}:web-v${VERSION}
 	docker push ${IMAGE_NAME}:task-v${VERSION}
 
-.PHONY: build-web build-task push
+.PHONY: test build-web build-task push
