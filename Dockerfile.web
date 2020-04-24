@@ -1,5 +1,7 @@
 FROM golang:alpine AS builder
 
+ARG VERSION
+
 RUN apk update && apk add --no-cache \
     git \
     curl \
@@ -10,7 +12,7 @@ COPY . .
 WORKDIR $GOPATH/src/pkg/app/web
 RUN go get -d -v
 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /go/bin/web
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X gitlab.com/sgryczan/go-worker-api/common.Version=${VERSION}" -o /go/bin/web
 
 RUN download_url=$(curl -s https://api.github.com/repos/go-swagger/go-swagger/releases/latest | \
   jq -r '.assets[] | select(.name | contains("'"$(uname | tr '[:upper:]' '[:lower:]')"'_amd64")) | .browser_download_url') && \

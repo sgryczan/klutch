@@ -4,13 +4,13 @@ IMAGE_NAME=sgryczan/klutch
 all: build-web build-task
 
 build-web:
-	docker build -f Dockerfile.web -t ${IMAGE_NAME}:web-v${VERSION} .
+	docker build -f Dockerfile.web --build-arg VERSION=${VERSION} -t ${IMAGE_NAME}:web-v${VERSION} .
 
 run-server:
 	docker run -ti --rm --network="host" server /bin/sh
 
 build-task:
-	docker build -f Dockerfile.task -t ${IMAGE_NAME}:task-v${VERSION} .
+	docker build -f Dockerfile.task --build-arg VERSION=${VERSION} -t ${IMAGE_NAME}:task-v${VERSION} .
 
 push:
 	docker push ${IMAGE_NAME}:web-v${VERSION}

@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/streadway/amqp"
-	"gitlab.com/sgryczan/go-worker-api/common"
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/streadway/amqp"
+	"gitlab.com/sgryczan/go-worker-api/common"
 )
 
 type plumbus struct {
@@ -65,6 +67,8 @@ func main() {
 		nil,
 	)
 	handleError(err, "Could not register consumer")
+
+	fmt.Println("Started " + common.GetVersion())
 
 	stopChan := make(chan bool)
 

@@ -16,29 +16,32 @@ import (
 
 // Items contains common.Plumbuses (plumbi?)
 var Items = map[string]common.Plumbus{}
-var DB_endpoint = os.Getenv("REDIS_ENDPOINT")
-var Queue_endpoint = os.Getenv("RABBITMQ_ENDPOINT")
+var DBEndpoint = os.Getenv("REDIS_ENDPOINT")
+var QueueEndpoint = os.Getenv("RABBITMQ_ENDPOINT")
+var version string
 
 //var db, err =  common.Newcommon.RedisDatastore("redis:6379")
 
 func main() {
 
-	if DB_endpoint == "" {
-		DB_endpoint = "redis"
+	// Default values for testing in Docker
+	// remove at some point
+	if DBEndpoint == "" {
+		DBEndpoint = "redis"
 	}
-
-	if Queue_endpoint == "" {
-		Queue_endpoint = "rabbitmq"
+	if QueueEndpoint == "" {
+		QueueEndpoint = "rabbitmq"
 	}
+	//
 
-	db, err := common.NewRedisDatastore(DB_endpoint + ":6379")
+	db, err := common.NewRedisDatastore(DBEndpoint + ":6379")
 	if err != nil {
 		log.Print(err)
 	}
 
 	defer db.Close()
 
-	rmq, err := amqp.Dial("amqp://guest:guest@" + Queue_endpoint + ":5672/")
+	rmq, err := amqp.Dial("amqp://guest:guest@" + QueueEndpoint + ":5672/")
 	if err != nil {
 		log.Print("Cant connect to rabbitmq")
 	}
@@ -63,7 +66,8 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	r := mux.NewRouter()
-	fmt.Println("Started v0.0.0")
+	fmt.Println("Started " + common.GetVersion())
+
 	r.HandleFunc("/", homeHandler)
 	r.Handle("/id/{item}", common.ItemHandler(queConn, db, AddHandler)).Methods("POST")
 	//r.Handle("/id/{item}", common.RedisHandler(db, deleteHandler)).Methods("DELETE")

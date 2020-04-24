@@ -11,6 +11,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Version holds the version at buildtime
+var Version string
+
 // RedisDatastore houses pools
 type RedisDatastore struct {
 	*pool.Pool
@@ -41,6 +44,11 @@ type Plumbus struct {
 type Cluster struct {
 	Name string
 	ID   int
+}
+
+// GetVersion returns the version
+func GetVersion() string {
+	return Version
 }
 
 // RedisHandler transforms incoming requests into Redis actions
@@ -124,7 +132,7 @@ func (r *RedisDatastore) ListKeys() (*[]Plumbus, error) {
 		return nil, err
 	}
 
-	for i, _ := range keysJSON {
+	for i := range keysJSON {
 		key, _ := keysJSON[i].Str()
 		p := Plumbus{
 			Name: key,

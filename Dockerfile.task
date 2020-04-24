@@ -1,5 +1,7 @@
 FROM golang:alpine AS builder
 
+ARG VERSION
+
 RUN apk update && apk add --no-cache git
 WORKDIR $GOPATH/src/pkg/app/
 COPY . .
@@ -7,7 +9,7 @@ COPY . .
 WORKDIR $GOPATH/src/pkg/app/task
 RUN go get -d -v
 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /go/bin/task
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X gitlab.com/sgryczan/go-worker-api/common.Version=${VERSION}" -o /go/bin/task
 
 FROM alpine
 
